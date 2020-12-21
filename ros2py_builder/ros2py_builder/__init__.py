@@ -80,90 +80,94 @@ def build_package(
     temp_dir: pathlib.Path,
     all_ros_packages: List[str],
 ) -> None:
-    if (package_dir / "setup.py").exists():
-        build_python_package(package_dir, dest_dir)
-    elif (package_dir / "CMakeLists.txt").exists():
+    if (package_dir / "CMakeLists.txt").exists():
         package_name = PACKAGE_MAPPING.get(ros_package.name, ros_package.name)
         assert package_name is not None
         package_build_dir = temp_dir / package_name
-        package_build_dir.mkdir()
-        pathlib.Path(package_build_dir / "src").symlink_to(
-            package_dir.resolve(), target_is_directory=True
-        )
-        template_dir = pathlib.Path(__file__).parent
-        template = Template((template_dir / "setup.py.in").read_text())
-        (package_build_dir / "setup.py").write_text(
-            template.substitute(
-                {
-                    "package_name": package_name,
-                    "version": ros_package.version,
-                    "build_option": str({"cmake_args": build_option.cmake_args}),
-                    "install_requires": ",\n".join(
-                        convert_depends(
-                            [
-                                d.name
-                                for d in ros_package.build_export_depends
-                                + ros_package.buildtool_export_depends
-                                + ros_package.exec_depends
-                            ]
-                            + build_option.install_requires,
-                            all_ros_packages,
-                        ),
-                    ),
-                }
+        if len(list(dest_dir.glob(f"{package_name}-*.tar.gz"))) == 0:
+            package_build_dir.mkdir()
+            pathlib.Path(package_build_dir / "src").symlink_to(
+                package_dir.resolve(), target_is_directory=True
             )
-        )
-        template = Template((template_dir / "pyproject.toml.in").read_text())
-        (package_build_dir / "pyproject.toml").write_text(
-            template.substitute(
-                {
-                    "build_requires": ", ".join(
-                        convert_depends(
-                            [
-                                d.name
-                                for d in ros_package.build_depends
-                                + ros_package.buildtool_depends
-                            ]
-                            + build_option.build_requires
-                            + ["setuptools", "wheel"],
-                            all_ros_packages,
+            template_dir = pathlib.Path(__file__).parent
+            template = Template((template_dir / "setup.py.in").read_text())
+            (package_build_dir / "setup.py").write_text(
+                template.substitute(
+                    {
+                        "package_name": package_name,
+                        "version": ros_package.version,
+                        "build_option": str({"cmake_args": build_option.cmake_args}),
+                        "install_requires": ",\n".join(
+                            convert_depends(
+                                [
+                                    d.name
+                                    for d in ros_package.build_export_depends
+                                    + ros_package.buildtool_export_depends
+                                    + ros_package.exec_depends
+                                ]
+                                + build_option.install_requires,
+                                all_ros_packages,
+                            ),
                         ),
-                    ),
-                }
+                    }
+                )
             )
-        )
-        content = (template_dir / "MANIFEST.in").read_text()
-        (package_build_dir / "MANIFEST.in").write_text(content)
+            template = Template((template_dir / "pyproject.toml.in").read_text())
+            (package_build_dir / "pyproject.toml").write_text(
+                template.substitute(
+                    {
+                        "build_requires": ", ".join(
+                            convert_depends(
+                                [
+                                    d.name
+                                    for d in ros_package.build_depends
+                                    + ros_package.buildtool_depends
+                                ]
+                                + build_option.build_requires
+                                + ["setuptools", "wheel"],
+                                all_ros_packages,
+                            ),
+                        ),
+                    }
+                )
+            )
+            content = (template_dir / "MANIFEST.in").read_text()
+            (package_build_dir / "MANIFEST.in").write_text(content)
         build_python_package(package_build_dir, dest_dir)
+    elif (package_dir / "setup.py").exists():
+        build_python_package(package_dir, dest_dir)
 
 
 def build_python_package(package_dir: pathlib.Path, dest_dir: pathlib.Path) -> None:
-    subprocess.check_call(
-        [
-            sys.executable,
-            "setup.py",
-            "sdist",
-            "--dist-dir",
-            dest_dir.resolve(),
-        ],
-        cwd=str(package_dir),
-    )
-    sdist = next(dest_dir.glob(f"{package_dir.name}-*.tar.gz"))
-    subprocess.check_call(
-        [
-            sys.executable,
-            "-m",
-            "pip",
-            "wheel",
-            #            "-v",
-            "--no-deps",
-            "--find-links",
-            dest_dir,
-            "--wheel-dir",
-            dest_dir,
-            sdist,
-        ],
-    )
+    package_name = package_dir.name
+    if len(list(dest_dir.glob(f"{package_name}-*.tar.gz"))) == 0:
+        subprocess.check_call(
+            [
+                sys.executable,
+                "setup.py",
+                "sdist",
+                "--dist-dir",
+                dest_dir.resolve(),
+            ],
+            cwd=str(package_dir),
+        )
+    sdist = next(dest_dir.glob(f"{package_name}-*.tar.gz"))
+    if len(list(dest_dir.glob(f"{package_name}-*.whl"))) == 0:
+        subprocess.check_call(
+            [
+                sys.executable,
+                "-m",
+                "pip",
+                "wheel",
+                #            "-v",
+                "--no-deps",
+                "--find-links",
+                dest_dir,
+                "--wheel-dir",
+                dest_dir,
+                sdist,
+            ],
+        )
 
 
 def build_repository(
