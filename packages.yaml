@@ -1,0 +1,119 @@
+repositories:
+  - name: ament_package
+    url: https://github.com/ament/ament_package.git
+    version: foxy
+  - name: ament_cmake
+    url: https://github.com/ament/ament_cmake.git
+    version: foxy
+  - name: ament_cmake_ros
+    url: https://github.com/ros2/ament_cmake_ros.git
+    version: foxy
+  - name: ament_index
+    url: https://github.com/ament/ament_index.git
+    version: foxy
+  - name: foonathan_memory_vendor
+    url: https://github.com/eProsima/foonathan_memory_vendor.git
+    version: v1.0.0
+    build:
+      foonathan_memory_vendor:
+        build_requires:
+          - ament_cmake_ros
+  - name: fastrtps
+    url: https://github.com/eProsima/Fast-DDS.git
+    version: v2.1.0
+    build:
+      fastrtps:
+        cmake_args:
+          - "-DTHIRDPARTY_Asio=ON"
+          - "-DTHIRDPARTY_fastcdr=ON"
+          - "-DTHIRDPARTY_TinyXML2=ON"
+          - "-DTHIRDPARTY_UPDATE=OFF"
+  - name: rcutils
+    url: https://github.com/ros2/rcutils.git
+    version: foxy
+  - name: rcpputils
+    url: https://github.com/ros2/rcpputils.git
+    version: foxy
+  - name: rosidl
+    url: https://github.com/ros2/rosidl.git
+    version: foxy
+  - name: python_cmake_module
+    url: https://github.com/ros2/python_cmake_module.git
+    version: foxy
+  - name: rpyutils
+    url: https://github.com/ros2/rpyutils.git
+    version: foxy
+  - name: rosidl_python
+    url: https://github.com/ros2/rosidl_python.git
+    version: foxy
+  - name: rmw
+    url: https://github.com/ros2/rmw.git
+    version: foxy
+  - name: rosidl_typesupport_fastrtps
+    url: https://github.com/ros2/rosidl_typesupport_fastrtps.git
+    version: foxy
+  - name: rosidl_typesupport
+    url: https://github.com/ros2/rosidl_typesupport.git
+    version: foxy
+  - name: rosidl_defaults
+    url: https://github.com/ros2/rosidl_defaults.git
+    version: foxy
+    build:
+      rosidl_default_generators:
+        install_requires:
+          - rosidl_typesupport_fastrtps_c
+          - rosidl_typesupport_fastrtps_cpp
+  - name: rmw_dds_common
+    url: https://github.com/ros2/rmw_dds_common.git
+    version: foxy
+  - name: rmw_fastrtps
+    url: https://github.com/ros2/rmw_fastrtps.git
+    version: foxy
+  - name: rmw_implementation
+    url: https://github.com/ros2/rmw_implementation.git
+    version: foxy
+    build:
+      rmw_implementation:
+        cmake_args:
+          - "-DRMW_IMPLEMENTATION_DISABLE_RUNTIME_SELECTION=OFF"
+  - name: unique_identifier_msgs
+    url: https://github.com/ros2/unique_identifier_msgs.git
+    version: foxy
+  - name: rcl_interfaces
+    url: https://github.com/ros2/rcl_interfaces.git
+    version: foxy
+    excludes:
+      - test_msgs
+  - name: libyaml_vendor
+    repositories:
+    url: https://github.com/ros2/libyaml_vendor.git
+    version: foxy
+  - name: ros2_tracing
+    url: https://gitlab.com/ros-tracing/ros2_tracing.git
+    version: foxy
+    excludes:
+      - tracetools_test
+  - name: spdlog_vendor
+    url: https://github.com/ros2/spdlog_vendor.git
+    version: foxy
+  - name: rcl_logging
+    url: https://github.com/ros2/rcl_logging.git
+    version: foxy
+    excludes:
+      - rcl_logging_log4cxx
+      - rcl_logging_noop
+  - name: rcl
+    url: https://github.com/ros2/rcl.git
+    version: foxy
+    build:
+      rcl:
+        install_requires:
+          - rmw_fastrtps_cpp
+        build_requires:
+          - rmw_fastrtps_cpp
+  - name: rclpy
+    url: https://github.com/ros2/rclpy.git
+    version: foxy
+  - name: common_interfaces
+    url: https://github.com/ros2/common_interfaces.git
+    version: foxy

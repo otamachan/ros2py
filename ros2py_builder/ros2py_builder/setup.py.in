@@ -1,0 +1,73 @@
+import glob
+import os
+import pathlib
+import shutil
+import subprocess
+import sys
+
+from distutils.command.install_data import install_data as _install_data
+from setuptools.command.build_clib import build_clib as _build_clib
+from setuptools import setup
+
+
+class build_clib(_build_clib):
+    def check_library_list(self, libraries):
+        pass
+
+    def build_libraries(self, libraries):
+        src_dir = pathlib.Path("src")
+        temp_dir = pathlib.Path(self.build_temp)
+        build_dir = temp_dir / "build"
+        install_prefix_dir = temp_dir / "install"
+        build_prefix = pathlib.Path(os.path.abspath(os.environ['PATH'].split(':')[0] + '/..'))
+        build_dir.mkdir(parents=True, exist_ok=True)
+        install_prefix_dir.mkdir()
+        # ament_index is needed in install directory ...
+        (install_prefix_dir / "share").mkdir()
+        (install_prefix_dir / "share" / "ament_index").symlink_to(build_prefix / "share" / "ament_index", target_is_directory=True)
+        build_option = self.distribution.libraries[0][1]
+        cmake_args = build_option.get("cmake_args", [])
+        install_prefix = str(install_prefix_dir.resolve())
+        subprocess.check_call(
+            [
+                "cmake",
+                src_dir.resolve(),
+                "-DCMAKE_BUILD_TYPE=Release",
+                f"-DCMAKE_INSTALL_PREFIX={install_prefix}",
+                f"-DCMAKE_PREFIX_PATH={install_prefix}",
+                "-DBUILD_TESTING=OFF",
+            ]
+            + cmake_args,
+            cwd=str(build_dir),
+        )
+        (install_prefix_dir / "share" / "ament_index").unlink()
+        subprocess.check_call(
+            ["cmake", "--build", build_dir, "--target", "install"],
+        )
+        if self.distribution.data_files is None:
+            self.distribution.data_files = []
+        prefix_len = len(str(install_prefix_dir)) + 1
+        for f in glob.glob(str(install_prefix_dir / "**"), recursive=True):
+            path = pathlib.Path(f)
+            if path.is_file():
+                self.distribution.data_files.append(
+                    (str(path.parent)[prefix_len:], [f])
+                )
+
+    def get_source_files(self):
+        return []
+
+
+class install_data(_install_data):
+    def copy_file(self, src, dst):
+        shutil.copy2(src, dst + "/", follow_symlinks=False)
+        return (dst, 1)
+
+
+setup(
+    name="${package_name}",
+    version="${version}",
+    libraries=[("${package_name}", $build_option)],
+    install_requires=[${install_requires}],
+    cmdclass={"build_clib": build_clib, "install_data": install_data},
+)
