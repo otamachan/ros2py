@@ -114,6 +114,9 @@ repositories:
   - name: rclpy
     url: https://github.com/ros2/rclpy.git
     version: foxy
+    build:
+      rclpy:
+        python: true
   - name: common_interfaces
     url: https://github.com/ros2/common_interfaces.git
     version: foxy
@@ -169,6 +172,9 @@ repositories:
   - name: geometry2
     url: https://github.com/ros2/geometry2.git
     version: foxy
+    build:
+      tf2_py:
+        python: true
     excludes:
       - test_tf2
   - name: yaml_cpp_vendor

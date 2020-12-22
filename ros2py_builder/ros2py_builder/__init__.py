@@ -38,6 +38,7 @@ class BuildOption:
     cmake_args: List[str] = field(default_factory=list)
     build_requires: List[str] = field(default_factory=list)
     install_requires: List[str] = field(default_factory=list)
+    python: bool = False
 
 
 @dataclass
@@ -96,7 +97,8 @@ def build_package(
                     {
                         "package_name": package_name,
                         "version": ros_package.version,
-                        "build_option": str({"cmake_args": build_option.cmake_args}),
+                        "cmake_args": str(build_option.cmake_args),
+                        "python": str(build_option.python),
                         "install_requires": ",\n".join(
                             convert_depends(
                                 [
@@ -142,13 +144,7 @@ def build_python_package(package_dir: pathlib.Path, dest_dir: pathlib.Path) -> N
     package_name = package_dir.name
     if len(list(dest_dir.glob(f"{package_name}-*.tar.gz"))) == 0:
         subprocess.check_call(
-            [
-                sys.executable,
-                "setup.py",
-                "sdist",
-                "--dist-dir",
-                dest_dir.resolve(),
-            ],
+            [sys.executable, "setup.py", "sdist", "--dist-dir", dest_dir.resolve(),],
             cwd=str(package_dir),
         )
     sdist = next(dest_dir.glob(f"{package_name}-*.tar.gz"))
@@ -252,15 +248,12 @@ def main() -> None:
     with open("packages.yaml") as f:
         repositories_data = yaml.safe_load(f)
     repositories = [
-        dacite.from_dict(
-            data_class=Repository,
-            data=repository_data,
-        )
+        dacite.from_dict(data_class=Repository, data=repository_data,)
         for repository_data in repositories_data["repositories"]
     ]
     temp = tempfile.mkdtemp(prefix="ros2py-build-")
     temp_dir = pathlib.Path(temp)
-    dest_dir = pathlib.Path("dist" + ".".join([str(v) for v in sys.version_info[0:3]]))
+    dest_dir = pathlib.Path(".".join([str(v) for v in sys.version_info[0:3]]) + "-dist")
     try:
         for repository in repositories:
             build_repository(repository, dest_dir, temp_dir, all_ros_packages)

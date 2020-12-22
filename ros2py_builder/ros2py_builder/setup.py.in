@@ -3,30 +3,57 @@ import os
 import pathlib
 import shutil
 import subprocess
-import sys
-
+from distutils.command.build import build as _build
 from distutils.command.install_data import install_data as _install_data
-from setuptools.command.build_clib import build_clib as _build_clib
+
+from setuptools import Distribution as _Distribtuion
 from setuptools import setup
+from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
 
 
-class build_clib(_build_clib):
-    def check_library_list(self, libraries):
-        pass
+class Distribution(_Distribtuion):
+    def __init__(self, *args, **kwargs):
+        self.cmake_args = []
+        if "cmake_args" in kwargs and "cmake_args" in kwargs:
+            self.cmake_args = kwargs["cmake_args"]
+            del kwargs["cmake_args"]
+        self.python = False
+        if "python" in kwargs:
+            self.python = kwargs["python"]
+            del kwargs["python"]
+        super().__init__(*args, **kwargs)
 
-    def build_libraries(self, libraries):
+
+class bdist_wheel(_bdist_wheel):
+    def finalize_options(self):
+        super().finalize_options()
+        self.root_is_pure = False
+
+    def get_tag(self):
+        tag = super().get_tag()
+        if self.distribution.python:
+            return tag
+        return self.python_tag, "none", tag[2]
+
+
+class build(_build):
+    def run(self):
+        super().run()
         src_dir = pathlib.Path("src")
         temp_dir = pathlib.Path(self.build_temp)
         build_dir = temp_dir / "build"
         install_prefix_dir = temp_dir / "install"
-        build_prefix = pathlib.Path(os.path.abspath(os.environ['PATH'].split(':')[0] + '/..'))
+        build_prefix = pathlib.Path(
+            os.path.abspath(os.environ["PATH"].split(":")[0] + "/..")
+        )
         build_dir.mkdir(parents=True, exist_ok=True)
-        install_prefix_dir.mkdir()
+        install_prefix_dir.mkdir(parents=True, exist_ok=True)
         # ament_index is needed in install directory ...
-        (install_prefix_dir / "share").mkdir()
-        (install_prefix_dir / "share" / "ament_index").symlink_to(build_prefix / "share" / "ament_index", target_is_directory=True)
-        build_option = self.distribution.libraries[0][1]
-        cmake_args = build_option.get("cmake_args", [])
+        (install_prefix_dir / "share").mkdir(exist_ok=True)
+        (install_prefix_dir / "share" / "ament_index").symlink_to(
+            build_prefix / "share" / "ament_index", target_is_directory=True
+        )
+        cmake_args = self.distribution.cmake_args
         install_prefix = str(install_prefix_dir.resolve())
         subprocess.check_call(
             [
@@ -54,9 +81,6 @@ class build_clib(_build_clib):
                     (str(path.parent)[prefix_len:], [f])
                 )
 
-    def get_source_files(self):
-        return []
-
 
 class install_data(_install_data):
     def copy_file(self, src, dst):
@@ -67,7 +91,9 @@ class install_data(_install_data):
 setup(
     name="${package_name}",
     version="${version}",
-    libraries=[("${package_name}", $build_option)],
+    distclass=Distribution,
+    cmake_args=${cmake_args},
+    python=${python},
     install_requires=[${install_requires}],
-    cmdclass={"build_clib": build_clib, "install_data": install_data},
+    cmdclass={"build": build, "install_data": install_data, "bdist_wheel": bdist_wheel},
 )
