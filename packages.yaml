@@ -117,3 +117,74 @@ repositories:
   - name: common_interfaces
     url: https://github.com/ros2/common_interfaces.git
     version: foxy
+  - name: resource_retriever
+    url: https://github.com/ros/resource_retriever.git
+    version: foxy
+  - name: eigen3_cmake_module
+    url: https://github.com/ros2/eigen3_cmake_module.git
+    version: foxy
+  - name: console_bridge_vendor
+    url: https://github.com/ros2/console_bridge_vendor.git
+    version: foxy
+  - name: class_loader
+    url: https://github.com/ros/class_loader.git
+    version: foxy
+  - name: tinyxml2_vendor
+    url: https://github.com/ros2/tinyxml2_vendor.git
+    version: foxy
+  - name: tinyxml_vendor
+    url: https://github.com/ros2/tinyxml_vendor.git
+    version: foxy
+  - name: urdfdom_headers
+    url: https://github.com/ros/urdfdom_headers.git
+    version: foxy
+    patch: patches/urdfdom_headers.patch
+  - name: urdfdom
+    url: https://github.com/ros/urdfdom.git
+    version: foxy
+  - name: orocos_kinematics_dynamics
+    url: https://github.com/ros2/orocos_kinematics_dynamics.git
+    version: foxy
+  - name: urdf
+    url: https://github.com/ros2/urdf.git
+    version: foxy
+  - name: kdl_parser
+    url: https://github.com/ros/kdl_parser.git
+    version: foxy
+  - name: pluginlib
+    url: https://github.com/ros/pluginlib.git
+    version: foxy
+  - name: libstatistics_collector
+    type: git
+    url: https://github.com/ros-tooling/libstatistics_collector.git
+    version: foxy-devel
+  - name: rclcpp
+    type: git
+    url: https://github.com/ros2/rclcpp.git
+    version: foxy
+  - name: message_filters
+    type: git
+    url: https://github.com/ros2/message_filters.git
+    version: foxy
+  - name: geometry2
+    url: https://github.com/ros2/geometry2.git
+    version: foxy
+    excludes:
+      - test_tf2
+  - name: yaml_cpp_vendor
+    url: https://github.com/ros2/yaml_cpp_vendor.git
+    version: foxy
+  - name: laser_geometry
+    url: https://github.com/ros-perception/laser_geometry.git
+    version: foxy
+  - name: navigation_msgs
+    url: https://github.com/ros-planning/navigation_msgs.git
+    version: foxy
+  - name: interactive_markers
+    url: https://github.com/ros-visualization/interactive_markers.git
+    version: foxy
+  - name: rviz
+    url: https://github.com/ros2/rviz.git
+    version: foxy
+    excludes:
+      - rviz_visual_testing_framework
