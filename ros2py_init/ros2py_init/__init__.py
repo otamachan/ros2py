@@ -1,4 +1,6 @@
 import argparse
+import glob
+import os
 import pathlib
 import platform
 import sys
@@ -37,12 +39,12 @@ def update() -> None:
     script = insert_after(
         script,
         "export PATH",
-        f'_OLD_{VAR_NAME}="${{{VAR_NAME}}}"; {VAR_NAME}="$VIRTUAL_ENV/lib:${VAR_NAME}"; export {VAR_NAME}; echo {VAR_NAME}=${{{VAR_NAME}}}',
+        f'_OLD_{VAR_NAME}="${{{VAR_NAME}}}"; {VAR_NAME}="$(ros2py-init --path)"; AMENT_PREFIX_PATH=$VIRTUAL_ENV; export {VAR_NAME}; export AMENT_PREFIX_PATH; echo {VAR_NAME}=${{{VAR_NAME}}}',
     )
     script = insert_after(
         script,
         "        unset _OLD_VIRTUAL_PATH",
-        f'        {VAR_NAME}="${{_OLD_{VAR_NAME}}}"; export {VAR_NAME}; unset _OLD_{VAR_NAME};',
+        f'        {VAR_NAME}="${{_OLD_{VAR_NAME}}}"; export {VAR_NAME}; unset _OLD_{VAR_NAME}; unset AMENT_INDEX_PREFIX',
     )
     SCRIPT_FILE.write_text(script)
     print("updated")
@@ -61,11 +63,21 @@ def restore() -> None:
     print("restored")
 
 
+def show_library_path() -> None:
+    prefix = os.environ["VIRTUAL_ENV"]
+    vendors = glob.glob(os.path.join(prefix, "opt", "*"))
+    print(":".join([os.path.join(p, "lib") for p in [prefix] + vendors]))
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--restore", action="store_true")
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("--restore", action="store_true")
+    group.add_argument("--path", action="store_true")
     args = parser.parse_args()
-    if args.restore:
+    if args.path:
+        show_library_path()
+    elif args.restore:
         restore()
     else:
         update()
