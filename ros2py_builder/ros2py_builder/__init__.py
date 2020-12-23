@@ -270,7 +270,7 @@ def main() -> None:
     ]
     temp = tempfile.mkdtemp(prefix="ros2py-build-")
     temp_dir = pathlib.Path(temp)
-    dest_dir = pathlib.Path(".".join([str(v) for v in sys.version_info[0:3]]) + "-dist")
+    dest_dir = pathlib.Path("dist")
     try:
         for repository in repositories:
             build_repository(repository, dest_dir, temp_dir, all_ros_packages)
