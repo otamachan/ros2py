@@ -144,7 +144,14 @@ def build_python_package(package_dir: pathlib.Path, dest_dir: pathlib.Path) -> N
     package_name = package_dir.name
     if len(list(dest_dir.glob(f"{package_name}-*.tar.gz"))) == 0:
         subprocess.check_call(
-            [sys.executable, "setup.py", "sdist", "--dist-dir", dest_dir.resolve(),],
+            [
+                sys.executable,
+                "-s",
+                "setup.py",
+                "sdist",
+                "--dist-dir",
+                dest_dir.resolve(),
+            ],
             cwd=str(package_dir),
         )
     sdist = next(dest_dir.glob(f"{package_name}-*.tar.gz"))
@@ -152,6 +159,7 @@ def build_python_package(package_dir: pathlib.Path, dest_dir: pathlib.Path) -> N
         subprocess.check_call(
             [
                 sys.executable,
+                "-s",
                 "-m",
                 "pip",
                 "wheel",
