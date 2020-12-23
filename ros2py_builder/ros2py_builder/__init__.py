@@ -138,12 +138,16 @@ def build_package(
             )
             content = (template_dir / "MANIFEST.in").read_text()
             (package_build_dir / "MANIFEST.in").write_text(content)
-        build_python_package(package_build_dir, dest_dir)
+        build_python_package(package_build_dir, dest_dir, build_option=build_option)
     elif (package_dir / "setup.py").exists():
         build_python_package(package_dir, dest_dir)
 
 
-def build_python_package(package_dir: pathlib.Path, dest_dir: pathlib.Path) -> None:
+def build_python_package(
+    package_dir: pathlib.Path,
+    dest_dir: pathlib.Path,
+    build_option: Optional[BuildOption] = None,
+) -> None:
     package_name = package_dir.name
     if len(list(dest_dir.glob(f"{package_name}-*.tar.gz"))) == 0:
         subprocess.check_call(
@@ -158,7 +162,9 @@ def build_python_package(package_dir: pathlib.Path, dest_dir: pathlib.Path) -> N
             cwd=str(package_dir),
         )
     sdist = next(dest_dir.glob(f"{package_name}-*.tar.gz"))
-    if len(list(dest_dir.glob(f"{package_name}-*.whl"))) == 0:
+    if len(list(dest_dir.glob(f"{package_name}-*.whl"))) == 0 or (
+        build_option is not None and build_option.python
+    ):
         subprocess.check_call(
             [
                 sys.executable,
