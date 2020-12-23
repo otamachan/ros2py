@@ -82,6 +82,9 @@ def build_package(
     all_ros_packages: List[str],
 ) -> None:
     if (package_dir / "CMakeLists.txt").exists():
+        build_option.python = (package_dir / "msg").exists() or (
+            package_dir / "srv"
+        ).exists()
         package_name = PACKAGE_MAPPING.get(ros_package.name, ros_package.name)
         assert package_name is not None
         package_build_dir = temp_dir / package_name
