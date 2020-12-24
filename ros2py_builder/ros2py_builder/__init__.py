@@ -1,3 +1,4 @@
+import os
 import pathlib
 import subprocess
 import sys
@@ -149,6 +150,8 @@ def build_python_package(
     build_option: Optional[BuildOption] = None,
 ) -> None:
     package_name = package_dir.name
+    env = os.environ.copy()
+    env["PATH"] = "/usr/sibn:/usr/bin:/bin"
     if len(list(dest_dir.glob(f"{package_name}-*.tar.gz"))) == 0:
         subprocess.check_call(
             [
@@ -160,6 +163,7 @@ def build_python_package(
                 dest_dir.resolve(),
             ],
             cwd=str(package_dir),
+            env=env,
         )
     sdist = next(dest_dir.glob(f"{package_name}-*.tar.gz"))
     if len(list(dest_dir.glob(f"{package_name}-*.whl"))) == 0 or (
@@ -172,7 +176,7 @@ def build_python_package(
                 "-m",
                 "pip",
                 "wheel",
-                #            "-v",
+                # "-v",
                 "--no-deps",
                 "--find-links",
                 dest_dir,
@@ -180,6 +184,7 @@ def build_python_package(
                 dest_dir,
                 sdist,
             ],
+            env=env,
         )
 
 
