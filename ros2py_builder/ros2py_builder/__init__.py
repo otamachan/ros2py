@@ -197,7 +197,7 @@ def build_repository(
     temp_dir: pathlib.Path,
     all_ros_packages: List[str],
 ) -> None:
-    if (dest_dir / repository.name).exists():
+    if (dest_dir / (repository.name + ".repo")).exists():
         return
     repository_root_dir = temp_dir / "repo"
     repository_root_dir.mkdir(exist_ok=True)
