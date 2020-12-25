@@ -177,6 +177,7 @@ repositories:
         python: true
     excludes:
       - test_tf2
+      - tf2_bullet
   - name: yaml_cpp_vendor
     url: https://github.com/ros2/yaml_cpp_vendor.git
     version: foxy
