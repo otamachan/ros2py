@@ -194,3 +194,6 @@ repositories:
     version: foxy
     excludes:
       - rviz_visual_testing_framework
+  - name: ros2cli
+    url: https://github.com/ros2/ros2cli.git
+    version: foxy
