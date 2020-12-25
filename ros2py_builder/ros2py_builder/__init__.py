@@ -83,9 +83,12 @@ def build_package(
     all_ros_packages: List[str],
 ) -> None:
     if (package_dir / "CMakeLists.txt").exists():
-        build_option.python = (package_dir / "msg").exists() or (
-            package_dir / "srv"
-        ).exists()
+        build_option.python = (
+            (package_dir / "msg").exists() or (package_dir / "srv").exists()
+        ) or (
+            "ament_python_install_package"
+            in (package_dir / "CMakeLists.txt").read_text()
+        )
         package_name = PACKAGE_MAPPING.get(ros_package.name, ros_package.name)
         assert package_name is not None
         package_build_dir = temp_dir / package_name
@@ -151,7 +154,7 @@ def build_python_package(
 ) -> None:
     package_name = package_dir.name
     env = os.environ.copy()
-    env["PATH"] = "/usr/sibn:/usr/bin:/bin"
+    env["PATH"] = f"{os.path.dirname(sys.executable)}:/usr/sibn:/usr/bin:/bin"
     if len(list(dest_dir.glob(f"{package_name}-*.tar.gz"))) == 0:
         subprocess.check_call(
             [
@@ -262,7 +265,7 @@ def build_repository(
         build_package(
             package_dir, ros_package, build_option, dest_dir, temp_dir, all_ros_packages
         )
-    (dest_dir / repository.name).write_text("")
+    (dest_dir / (repository.name + ".repo")).write_text("")
 
 
 def main() -> None:
@@ -270,7 +273,10 @@ def main() -> None:
     with open("packages.yaml") as f:
         repositories_data = yaml.safe_load(f)
     repositories = [
-        dacite.from_dict(data_class=Repository, data=repository_data,)
+        dacite.from_dict(
+            data_class=Repository,
+            data=repository_data,
+        )
         for repository_data in repositories_data["repositories"]
     ]
     temp = tempfile.mkdtemp(prefix="ros2py-build-")

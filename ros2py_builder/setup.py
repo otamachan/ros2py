@@ -15,5 +15,9 @@ setup(
         "pyyaml",
         "dataclasses; python_version<'3.7'",
     ],
-    entry_points={"console_scripts": ["ros2py-build = ros2py_builder:main",],},
+    entry_points={
+        "console_scripts": [
+            "ros2py-build = ros2py_builder:main",
+        ],
+    },
 )
