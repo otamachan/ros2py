@@ -1,5 +1,6 @@
 import os
 import pathlib
+import platform
 import subprocess
 import sys
 import tempfile
@@ -155,6 +156,8 @@ def build_python_package(
     package_name = package_dir.name
     env = os.environ.copy()
     env["PATH"] = f"{os.path.dirname(sys.executable)}:/usr/sibn:/usr/bin:/bin"
+    if platform.system() == "Darwin":
+        env["PATH"] += ":/usr/local/bin"
     if len(list(dest_dir.glob(f"{package_name}-*.tar.gz"))) == 0:
         subprocess.check_call(
             [
