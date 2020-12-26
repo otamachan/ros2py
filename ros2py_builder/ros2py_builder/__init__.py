@@ -1,3 +1,4 @@
+import argparse
 import os
 import pathlib
 import platform
@@ -75,14 +76,14 @@ def convert_depends(depends: List[str], all_ros_packages: List[str]) -> List[str
     return ['"' + p + '"' for p in packages]
 
 
-def build_package(
+def build_source_package(
     package_dir: pathlib.Path,
     ros_package: catkin_pkg.package.Package,
     build_option: BuildOption,
     dest_dir: pathlib.Path,
     temp_dir: pathlib.Path,
     all_ros_packages: List[str],
-) -> None:
+) -> str:
     if (package_dir / "CMakeLists.txt").exists():
         build_option.python = (
             (package_dir / "msg").exists() or (package_dir / "srv").exists()
@@ -143,15 +144,17 @@ def build_package(
             )
             content = (template_dir / "MANIFEST.in").read_text()
             (package_build_dir / "MANIFEST.in").write_text(content)
-        build_python_package(package_build_dir, dest_dir, build_option=build_option)
+        build_python_source_package(package_build_dir, dest_dir)
     elif (package_dir / "setup.py").exists():
-        build_python_package(package_dir, dest_dir)
+        package_name = package_dir.name
+        build_python_source_package(package_dir, dest_dir)
+    assert package_name is not None
+    return package_name
 
 
-def build_python_package(
+def build_python_source_package(
     package_dir: pathlib.Path,
     dest_dir: pathlib.Path,
-    build_option: Optional[BuildOption] = None,
 ) -> None:
     package_name = package_dir.name
     env = os.environ.copy()
@@ -171,32 +174,51 @@ def build_python_package(
                 dest_dir.resolve(),
             ],
             cwd=str(package_dir),
-            env=env,
-        )
-    sdist = next(dest_dir.glob(f"{package_name}-*.tar.gz"))
-    if len(list(dest_dir.glob(f"{package_name}-*.whl"))) == 0 or (
-        build_option is not None and build_option.python
-    ):
-        subprocess.check_call(
-            [
-                sys.executable,
-                "-s",
-                "-m",
-                "pip",
-                "wheel",
-                # "-v",
-                "--no-deps",
-                "--find-links",
-                dest_dir,
-                "--wheel-dir",
-                dest_dir,
-                sdist,
-            ],
-            env=env,
         )
 
 
-def build_repository(
+def build_binary_packages(
+    repository: Repository,
+    dest_dir: pathlib.Path,
+    build_option: Optional[BuildOption] = None,
+) -> None:
+    assert (dest_dir / (repository.name + ".repo")).exists()
+    build_packages = (dest_dir / (repository.name + ".repo")).read_text().splitlines()
+    env = os.environ.copy()
+    if "CI" not in env:
+        # reduce the affect of local install components
+        env["PATH"] = f"{os.path.dirname(sys.executable)}:/usr/sibn:/usr/bin:/bin"
+        if platform.system() == "Darwin":
+            env["PATH"] += ":/usr/local/bin"
+    for package in build_packages:
+        sdist = dest_dir / (package + ".tar.gz")
+        assert sdist.exists()
+        print(f"{package}-cp3{sys.version_info[1]}-*.whl")
+        if (
+            len(list(dest_dir.glob(f"{package}-py3-*.whl"))) == 0
+            and len(list(dest_dir.glob(f"{package}-cp3{sys.version_info[1]}-*.whl")))
+            == 0
+        ):
+            subprocess.check_call(
+                [
+                    sys.executable,
+                    "-s",
+                    "-m",
+                    "pip",
+                    "wheel",
+                    # "-v",
+                    "--no-deps",
+                    "--find-links",
+                    dest_dir,
+                    "--wheel-dir",
+                    dest_dir,
+                    sdist,
+                ],
+                env=env,
+            )
+
+
+def build_source_packages(
     repository: Repository,
     dest_dir: pathlib.Path,
     temp_dir: pathlib.Path,
@@ -264,16 +286,21 @@ def build_repository(
                     build_targets.append((ros_package_path, ros_package))
         for ros_package_path in found_ros_packages:
             del ros_packages[ros_package_path]
+    packages = []
     for ros_package_path, ros_package in build_targets:
         package_dir = repository_dir / ros_package_path
         build_option = repository.build.get(ros_package.name, BuildOption())
-        build_package(
+        package_name = build_source_package(
             package_dir, ros_package, build_option, dest_dir, temp_dir, all_ros_packages
         )
-    (dest_dir / (repository.name + ".repo")).write_text("")
+        packages.append(package_name + "-" + ros_package.version)
+    (dest_dir / (repository.name + ".repo")).write_text("\n".join(packages))
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--source", action="store_true", help="Build source packages")
+    args = parser.parse_args()
     all_ros_packages = get_all_ros_packages()
     with open("packages.yaml") as f:
         repositories_data = yaml.safe_load(f)
@@ -285,11 +312,15 @@ def main() -> None:
         for repository_data in repositories_data["repositories"]
     ]
     temp = tempfile.mkdtemp(prefix="ros2py-build-")
-    temp_dir = pathlib.Path(temp)
+    if args.source:
+        temp_dir = pathlib.Path(temp)
     dest_dir = pathlib.Path("dist")
     try:
         for repository in repositories:
-            build_repository(repository, dest_dir, temp_dir, all_ros_packages)
+            if args.source:
+                build_source_packages(repository, dest_dir, temp_dir, all_ros_packages)
+            else:
+                build_binary_packages(repository, dest_dir)
     except Exception as e:
         print(e)
     finally:

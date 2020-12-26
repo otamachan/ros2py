@@ -8,12 +8,56 @@ on:
 env:
   MASTER_BRANCH: refs/heads/master
 jobs:
+  test:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - name: Install pipenv
+      run: |
+        python -m pip install --upgrade pip
+        pip install -U setuptools wheel pipenv
+        pipenv install --dev
+    - name: Test
+      run: |
+        pipenv run black --version
+        pipenv run python --version
+        pipenv run black --diff --check ros2py_init
+        pipenv run black --diff --check ros2py_builder
+        pipenv run isort --diff --check-only ros2py_init
+        pipenv run isort --diff --check-only ros2py_builder
+        pipenv run mypy ros2py_init
+        pipenv run mypy ros2py_builder
+  source-build:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - name: Install rospy-build
+      run: |
+        python -m pip install --upgrade pip
+        pip install -U setuptools wheel
+        pip install ros2py_builder/
+    - name: Build platform independent packages
+      run: |
+        ros2py-build --source
+    - uses: actions/upload-artifact@v2
+      with:
+        name: source
+        path: dist
   native-build:
+    needs: source-build
     runs-on: ${{ matrix.platform }}
     strategy:
       matrix:
         platform: [ubuntu-latest, macos-latest]
-        python-version: [3.6]
+        python-version: [3.6, 3.7, 3.8]
     steps:
     - name: Git config
       run: git config --global core.symlinks true
@@ -70,15 +114,22 @@ jobs:
         python -m pip install --upgrade pip
         pip install -U setuptools wheel
         pip install ros2py_builder/
+    - name: Download math result for source
+      uses: actions/download-artifact@v2
+      with:
+        name: source
+        path: dist
     - name: Cache dist
       uses: actions/cache@v2
       with:
         path: |
-          dist
+          dist/*.whl
         key: ${{ github.ref }}-${{ matrix.platform }}-${{ matrix.python-version }}
     - name: Build packages
       run: |
-        env
         ros2py-build
       shell: bash
-
+    - uses: actions/upload-artifact@v2
+      with:
+        name: binary-${{ matrix.platform }}-${{ matrix.python_version }}
+        path: dist/*.whl

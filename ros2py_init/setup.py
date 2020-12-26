@@ -8,5 +8,7 @@ setup(
     author_email="otamachan@gmail.com",
     url="https://rospypi.github.io/simple2",
     packages=["ros2py_init"],
-    entry_points={"console_scripts": ["ros2py-init = ros2py_init:main"],},
+    entry_points={
+        "console_scripts": ["ros2py-init = ros2py_init:main"],
+    },
 )
