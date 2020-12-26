@@ -44,7 +44,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install -U setuptools wheel
         pip install ros2py_builder/
-    - name: Build platform independent packages
+    - name: Build source packages
       run: |
         ros2py-build --source
     - uses: actions/upload-artifact@v2
@@ -114,22 +114,23 @@ jobs:
         python -m pip install --upgrade pip
         pip install -U setuptools wheel
         pip install ros2py_builder/
-    - name: Download math result for source
+    - name: Download source packages
       uses: actions/download-artifact@v2
       with:
         name: source
         path: dist
-    - name: Cache dist
+    - name: Cache binary packages
       uses: actions/cache@v2
       with:
         path: |
           dist/*.whl
         key: ${{ github.ref }}-${{ matrix.platform }}-${{ matrix.python-version }}
-    - name: Build packages
+    - name: Build binary packages
       run: |
         ros2py-build
       shell: bash
-    - uses: actions/upload-artifact@v2
+    - name: Upload binary packages
+      uses: actions/upload-artifact@v2
       with:
         name: binary-${{ matrix.platform }}-${{ matrix.python_version }}
         path: dist/*.whl
