@@ -94,9 +94,6 @@ jobs:
       env:
         PYTHON_VERSION: ${{ matrix.python-version }}
       run: |
-        python3-config --ldflags
-        python3-config --includes
-        ls -al $(dirname $(which python3-config))/../lib
         sudo xcode-select -s '/Applications/Xcode_11.2.1.app/Contents/Developer'
         brew install \
             assimp \
