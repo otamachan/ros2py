@@ -3,6 +3,7 @@ import os
 import pathlib
 import shutil
 import subprocess
+import sys
 from distutils.command.build import build as _build
 from distutils.command.install_data import install_data as _install_data
 
@@ -55,13 +56,14 @@ class build(_build):
         )
         cmake_args = self.distribution.cmake_args
         install_prefix = str(install_prefix_dir.resolve())
+        cmake_prefix = install_prefix + ";" + sys.prefix
         subprocess.check_call(
             [
                 "cmake",
                 src_dir.resolve(),
                 "-DCMAKE_BUILD_TYPE=Release",
                 f"-DCMAKE_INSTALL_PREFIX={install_prefix}",
-                f"-DCMAKE_PREFIX_PATH={install_prefix}",
+                f"-DCMAKE_PREFIX_PATH={cmake_prefix}",
                 "-DBUILD_TESTING=OFF",
             ]
             + cmake_args,
