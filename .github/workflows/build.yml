@@ -8,7 +8,7 @@ on:
 env:
   MASTER_BRANCH: refs/heads/master
   INDEX_BRANCH: gh-pages
-  CACHE: 0
+  CACHE: 1
 jobs:
   test:
     runs-on: ubuntu-20.04
