@@ -7,6 +7,7 @@ on:
       - master
 env:
   MASTER_BRANCH: refs/heads/master
+  INDEX_BRANCH: gh-pages
 jobs:
   test:
     runs-on: ubuntu-20.04
@@ -51,7 +52,7 @@ jobs:
       with:
         name: source
         path: dist
-  native-build:
+  binary-build:
     needs: source-build
     runs-on: ${{ matrix.platform }}
     strategy:
@@ -131,3 +132,41 @@ jobs:
       with:
         name: binary-${{ matrix.platform }}-${{ matrix.python-version }}
         path: dist/*.whl
+  release:
+    needs: binary-build
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - name: Install pipenv
+      run: |
+        python -m pip install --upgrade pip
+        pip install ros2py_builder/
+    - name: Download source packages
+      uses: actions/download-artifact@v2
+      with:
+        path: dist
+    - name: Build index
+      run: |
+        ros2py-build --index index
+    - name: Runs only when tagged or pushed to master
+      if: startsWith(github.ref, 'refs/tags/') || github.ref == env.MASTER_BRANCH
+      env:
+        SIMPLE2_DEPLOY_PRIVATE_KEY: ${{ secrets.SIMPLE2_DEPLOY_PRIVATE_KEY }}
+      run: |
+        mkdir -p ~/.ssh
+        ssh-keyscan github.com >> ~/.ssh/known_hosts
+        echo "${SIMPLE2_DEPLOY_PRIVATE_KEY}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        cd index
+        git init
+        git config user.name "Tamaki Nishino"
+        git config user.email "otamachan@gmail.com"
+        git remote add origin git@github.com:rospypi/simple2.git
+        git checkout -b "${INDEX_BRANCH}"
+        git add .
+        git commit -am "Release $(date)"
+        git push -f origin "${INDEX_BRANCH}"
