@@ -1,13 +1,13 @@
 repositories:
   - name: ament_package
     url: https://github.com/ament/ament_package.git
-    version: foxy
+    version: 0.9.3
   - name: ament_cmake
     url: https://github.com/ament/ament_cmake.git
-    version: foxy
+    version: 0.9.8
   - name: ament_cmake_ros
     url: https://github.com/ros2/ament_cmake_ros.git
-    version: foxy
+    version: 0.9.0
   - name: ament_index
     url: https://github.com/ament/ament_index.git
     version: foxy
@@ -20,7 +20,7 @@ repositories:
           - ament_cmake_ros
   - name: fastrtps
     url: https://github.com/eProsima/Fast-DDS.git
-    version: v2.1.0
+    version: v2.0.2
     build:
       fastrtps:
         cmake_args:
@@ -30,34 +30,34 @@ repositories:
           - "-DTHIRDPARTY_UPDATE=OFF"
   - name: rcutils
     url: https://github.com/ros2/rcutils.git
-    version: foxy
+    version: 1.1.2
   - name: rcpputils
     url: https://github.com/ros2/rcpputils.git
-    version: foxy
+    version: 1.3.1
   - name: rosidl
     url: https://github.com/ros2/rosidl.git
-    version: foxy
+    version: 1.2.0
   - name: python_cmake_module
     url: https://github.com/ros2/python_cmake_module.git
-    version: foxy
+    version: 0.8.0
   - name: rpyutils
     url: https://github.com/ros2/rpyutils.git
-    version: foxy
+    version: 0.2.0
   - name: rosidl_python
     url: https://github.com/ros2/rosidl_python.git
-    version: foxy
+    version: 0.9.4
   - name: rmw
     url: https://github.com/ros2/rmw.git
-    version: foxy
+    version: 1.0.2
   - name: rosidl_typesupport_fastrtps
     url: https://github.com/ros2/rosidl_typesupport_fastrtps.git
-    version: foxy
+    version: 1.0.2
   - name: rosidl_typesupport
     url: https://github.com/ros2/rosidl_typesupport.git
-    version: foxy
+    version: 1.0.1
   - name: rosidl_defaults
     url: https://github.com/ros2/rosidl_defaults.git
-    version: foxy
+    version: 1.0.0
     build:
       rosidl_default_generators:
         install_requires:
@@ -65,46 +65,46 @@ repositories:
           - rosidl_typesupport_fastrtps_cpp
   - name: rmw_dds_common
     url: https://github.com/ros2/rmw_dds_common.git
-    version: foxy
+    version: 1.0.2
   - name: rmw_fastrtps
     url: https://github.com/ros2/rmw_fastrtps.git
-    version: foxy
+    version: 1.2.4
   - name: rmw_implementation
     url: https://github.com/ros2/rmw_implementation.git
-    version: foxy
+    version: 1.0.1
     build:
       rmw_implementation:
         cmake_args:
           - "-DRMW_IMPLEMENTATION_DISABLE_RUNTIME_SELECTION=OFF"
   - name: unique_identifier_msgs
     url: https://github.com/ros2/unique_identifier_msgs.git
-    version: foxy
+    version: 2.1.2
   - name: rcl_interfaces
     url: https://github.com/ros2/rcl_interfaces.git
-    version: foxy
+    version: 1.0.0
     excludes:
       - test_msgs
   - name: libyaml_vendor
     repositories:
     url: https://github.com/ros2/libyaml_vendor.git
-    version: foxy
+    version: 1.0.2
   - name: ros2_tracing
     url: https://gitlab.com/ros-tracing/ros2_tracing.git
-    version: foxy
+    version: 1.0.4
     excludes:
       - tracetools_test
   - name: spdlog_vendor
     url: https://github.com/ros2/spdlog_vendor.git
-    version: foxy
+    version: 1.1.2
   - name: rcl_logging
     url: https://github.com/ros2/rcl_logging.git
-    version: foxy
+    version: 1.0.1
     excludes:
       - rcl_logging_log4cxx
       - rcl_logging_noop
   - name: rcl
     url: https://github.com/ros2/rcl.git
-    version: foxy
+    version: 1.1.10
     build:
       rcl:
         install_requires:
@@ -113,65 +113,65 @@ repositories:
           - rmw_fastrtps_cpp
   - name: rclpy
     url: https://github.com/ros2/rclpy.git
-    version: foxy
+    version: 1.0.4
     build:
       rclpy:
         python: true
   - name: common_interfaces
     url: https://github.com/ros2/common_interfaces.git
-    version: foxy
+    version: 2.0.3
   - name: resource_retriever
     url: https://github.com/ros/resource_retriever.git
-    version: foxy
+    version: 2.3.4
   - name: eigen3_cmake_module
     url: https://github.com/ros2/eigen3_cmake_module.git
-    version: foxy
+    version: 0.1.1
   - name: console_bridge_vendor
     url: https://github.com/ros2/console_bridge_vendor.git
-    version: foxy
+    version: 1.2.3
   - name: class_loader
     url: https://github.com/ros/class_loader.git
-    version: foxy
+    version: 2.0.1
   - name: tinyxml2_vendor
     url: https://github.com/ros2/tinyxml2_vendor.git
-    version: foxy
+    version: 0.7.3
   - name: tinyxml_vendor
     url: https://github.com/ros2/tinyxml_vendor.git
-    version: foxy
+    version: 0.8.9
   - name: urdfdom_headers
     url: https://github.com/ros/urdfdom_headers.git
-    version: foxy
+    version: 1.0.5
     patch: patches/urdfdom_headers.patch
   - name: urdfdom
     url: https://github.com/ros/urdfdom.git
-    version: foxy
+    version: 2.3.3
   - name: orocos_kinematics_dynamics
     url: https://github.com/ros2/orocos_kinematics_dynamics.git
-    version: foxy
+    version: 3.3.1
   - name: urdf
     url: https://github.com/ros2/urdf.git
-    version: foxy
+    version: 2.4.0
   - name: kdl_parser
     url: https://github.com/ros/kdl_parser.git
-    version: foxy
+    version: 2.4.1
   - name: pluginlib
     url: https://github.com/ros/pluginlib.git
-    version: foxy
+    version: 2.5.3
   - name: libstatistics_collector
     type: git
     url: https://github.com/ros-tooling/libstatistics_collector.git
-    version: foxy-devel
+    version: 1.0.1
   - name: rclcpp
     type: git
     url: https://github.com/ros2/rclcpp.git
-    version: foxy
+    version: 2.3.0
   - name: message_filters
     type: git
     url: https://github.com/ros2/message_filters.git
-    version: foxy
+    version: 3.2.5
   - name: geometry2
     url: https://github.com/ros2/geometry2.git
-    version: foxy
+    version: 0.13.9
     build:
       tf2_py:
         python: true
@@ -180,21 +180,21 @@ repositories:
       - tf2_bullet
   - name: yaml_cpp_vendor
     url: https://github.com/ros2/yaml_cpp_vendor.git
-    version: foxy
+    version: 7.0.2
   - name: laser_geometry
     url: https://github.com/ros-perception/laser_geometry.git
-    version: foxy
+    version: 2.2.0
   - name: navigation_msgs
     url: https://github.com/ros-planning/navigation_msgs.git
-    version: foxy
+    version: 2.0.2
   - name: interactive_markers
     url: https://github.com/ros-visualization/interactive_markers.git
-    version: foxy
+    version: 2.1.3
   - name: rviz
     url: https://github.com/ros2/rviz.git
-    version: foxy
+    version: 8.2.1
     excludes:
       - rviz_visual_testing_framework
   - name: ros2cli
     url: https://github.com/ros2/ros2cli.git
-    version: foxy
+    version: 0.9.8
