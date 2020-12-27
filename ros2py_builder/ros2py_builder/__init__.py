@@ -290,6 +290,7 @@ def build_source_packages(
                     build_targets.append((ros_package_path, ros_package))
         for ros_package_path in found_ros_packages:
             del ros_packages[ros_package_path]
+    assert len(build_targets) > 0
     packages = []
     for ros_package_path, ros_package in build_targets:
         package_dir = repository_dir / ros_package_path
