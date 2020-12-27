@@ -20,7 +20,7 @@ repositories:
           - ament_cmake_ros
   - name: fastrtps
     url: https://github.com/eProsima/Fast-DDS.git
-    version: v2.0.2
+    version: v2.1.0
     build:
       fastrtps:
         cmake_args:
