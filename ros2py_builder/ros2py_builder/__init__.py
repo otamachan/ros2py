@@ -185,11 +185,9 @@ def build_python_source_package(
 
 
 def build_binary_packages(
-    repository: Repository,
-    dest_dir: pathlib.Path,
-    build_option: Optional[BuildOption] = None,
+    repository: Repository, dest_dir: pathlib.Path, rebuild: bool = False
 ) -> None:
-    assert (dest_dir / (repository.name + ".repo")).exists()
+    assert (dest_dir / (repository.name + ".repo")).exists(), repository.name
     build_packages = (dest_dir / (repository.name + ".repo")).read_text().splitlines()
     env = os.environ.copy()
     if "CI" not in env:
@@ -199,12 +197,12 @@ def build_binary_packages(
             env["PATH"] += ":/usr/local/bin"
     for package in build_packages:
         sdist = dest_dir / (package + ".tar.gz")
-        assert sdist.exists()
+        assert sdist.exists(), sdist
         if (
             len(list(dest_dir.glob(f"{package}-py3-*.whl"))) == 0
             and len(list(dest_dir.glob(f"{package}-cp3{sys.version_info[1]}-*.whl")))
             == 0
-        ):
+        ) or rebuild:
             subprocess.check_call(
                 [
                     sys.executable,
@@ -352,6 +350,9 @@ def main() -> None:
         action="store_true",
         help="Ignore error (to cache build results even if it fails)",
     )
+    parser.add_argument(
+        "--repository", type=str, nargs="+", default=[], help="Rebuild repository"
+    )
     args = parser.parse_args()
     dest_dir = pathlib.Path(args.dist)
     if args.index is not None:
@@ -376,11 +377,15 @@ def main() -> None:
             if args.source:
                 build_source_packages(repository, dest_dir, temp_dir, all_ros_packages)
             else:
-                build_binary_packages(repository, dest_dir)
-    except Exception as e:
+                build_binary_packages(
+                    repository, dest_dir, repository.name in args.repository
+                )
+    except Exception:
+        t, v, tb = sys.exc_info()
         if args.ignore_error:
-            print(e)
+            import traceback
+            traceback.print_exception(t, v, tb)
         else:
-            raise e
+            raise (t, v, tb)
     finally:
         print(f"remove {temp}")
