@@ -122,7 +122,7 @@ jobs:
       with:
         path: |
           dist/*.whl
-        key: ${{ github.ref }}-${{ matrix.platform }}-${{ matrix.python-version }}-${{ hashFiles('packages.yaml') }}
+        key: ${{ matrix.platform }}-${{ matrix.python-version }}-${{ hashFiles('packages.yaml') }}
     - name: Build binary packages
       if: env.CACHE == 1
       run: ros2py-build --ignore-error
