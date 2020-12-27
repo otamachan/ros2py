@@ -384,8 +384,9 @@ def main() -> None:
         t, v, tb = sys.exc_info()
         if args.ignore_error:
             import traceback
+
             traceback.print_exception(t, v, tb)
         else:
-            raise (t, v, tb)
+            raise
     finally:
         print(f"remove {temp}")
