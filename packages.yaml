@@ -195,6 +195,7 @@ repositories:
     version: 8.2.1
     excludes:
       - rviz_visual_testing_framework
+    patch: patches/rviz.patch
   - name: ros2cli
     url: https://github.com/ros2/ros2cli.git
     version: 0.9.8

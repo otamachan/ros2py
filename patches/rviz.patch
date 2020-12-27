@@ -1,0 +1,58 @@
+diff --git a/rviz_assimp_vendor/rviz_assimp_vendor-extras.cmake.in b/rviz_assimp_vendor/rviz_assimp_vendor-extras.cmake.in
+index 8e41fe66..18447dda 100644
+--- a/rviz_assimp_vendor/rviz_assimp_vendor-extras.cmake.in
++++ b/rviz_assimp_vendor/rviz_assimp_vendor-extras.cmake.in
+@@ -19,15 +19,22 @@ find_package(assimp REQUIRED QUIET)
+ string(REPLACE "/lib/lib/" "/lib/" ASSIMP_LIBRARY_DIRS "${ASSIMP_LIBRARY_DIRS}")
+ string(REGEX REPLACE "/lib/include$" "/include" ASSIMP_INCLUDE_DIRS "${ASSIMP_INCLUDE_DIRS}")
+ 
+-set(rviz_assimp_vendor_LIBRARIES)
++set(_assimp_libraries)
+ foreach(library IN LISTS ASSIMP_LIBRARIES)
+   message(STATUS "library: ${library}")
+   if(IS_ABSOLUTE "${library}")
+-    list(APPEND rviz_assimp_vendor_LIBRARIES "${library}")
++    list(APPEND _assimp_libraries "${library}")
+   else()
+     find_library(library_abs ${library} PATHS "${ASSIMP_LIBRARY_DIRS}" NO_DEFAULT_PATH)
+-    list(APPEND rviz_assimp_vendor_LIBRARIES "${library_abs}")
++    list(APPEND _assimp_libraries "${library_abs}")
+   endif()
+ endforeach()
+-set(rviz_assimp_vendor_LIBRARY_DIRS ${ASSIMP_LIBRARY_DIRS})
+-set(rviz_assimp_vendor_INCLUDE_DIRS ${ASSIMP_INCLUDE_DIRS})
++add_library(rviz_assimp_vendor SHARED IMPORTED)
++set_target_properties(rviz_assimp_vendor
++  PROPERTIES
++    IMPORTED_LOCATION ${_assimp_libraries}
++)
++set_property(TARGET rviz_assimp_vendor
++  PROPERTY
++    INTERFACE_INCLUDE_DIRECTORIES ${ASSIMP_INCLUDE_DIRS}
++)
+diff --git a/rviz_rendering/CMakeLists.txt b/rviz_rendering/CMakeLists.txt
+index c3dccd25..2b077215 100644
+--- a/rviz_rendering/CMakeLists.txt
++++ b/rviz_rendering/CMakeLists.txt
+@@ -99,6 +99,7 @@ target_link_libraries(rviz_rendering
+   PUBLIC
+   rviz_ogre_vendor::OgreMain
+   rviz_ogre_vendor::OgreOverlay
++  rviz_assimp_vendor
+   Qt5::Widgets
+   ament_index_cpp::ament_index_cpp
+   resource_retriever::resource_retriever
+@@ -115,12 +116,9 @@ target_include_directories(rviz_rendering
+ target_compile_definitions(rviz_rendering PRIVATE "RVIZ_RENDERING_BUILDING_LIBRARY")
+ 
+ ament_export_targets(rviz_rendering)
+-ament_target_dependencies(rviz_rendering
+-  PUBLIC
+-  rviz_assimp_vendor
+-)
+ ament_export_dependencies(
+   rviz_ogre_vendor
++  rviz_assimp_vendor
+   eigen3_cmake_module
+   Eigen3
+   resource_retriever
