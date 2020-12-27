@@ -76,7 +76,6 @@ jobs:
         sudo apt-get update && sudo apt-get install -y \
             cmake \
             curl \
-            libassimp-dev \
             libcurl4-openssl-dev \
             libeigen3-dev \
             libfreetype6-dev \
@@ -97,7 +96,6 @@ jobs:
       run: |
         sudo xcode-select -s '/Applications/Xcode_11.2.1.app/Contents/Developer'
         brew install \
-            assimp \
             cmake \
             curl \
             eigen \
