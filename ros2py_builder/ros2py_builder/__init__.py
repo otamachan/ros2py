@@ -300,6 +300,7 @@ def build_source_packages(
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--source", action="store_true", help="Build source packages")
+    parser.add_argument("--ignore-error", action="store_true", help="Ignore error (to cache build results even if it fails)")
     args = parser.parse_args()
     all_ros_packages = get_all_ros_packages()
     with open("packages.yaml") as f:
@@ -322,6 +323,9 @@ def main() -> None:
             else:
                 build_binary_packages(repository, dest_dir)
     except Exception as e:
-        print(e)
+        if args.ignore_error:
+            print(e)
+        else:
+            raise e
     finally:
         print(f"remove {temp}")
