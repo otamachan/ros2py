@@ -142,6 +142,7 @@ jobs:
     - name: Install pipenv
       run: |
         python -m pip install --upgrade pip
+        pip install -U setuptools wheel
         pip install ros2py_builder/
     - name: Download source packages
       uses: actions/download-artifact@v2
