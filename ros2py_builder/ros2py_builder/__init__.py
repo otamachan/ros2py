@@ -2,6 +2,8 @@ import argparse
 import os
 import pathlib
 import platform
+import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -53,6 +55,11 @@ class Repository:
     excludes: List[str] = field(default_factory=list)
     build: Dict[str, BuildOption] = field(default_factory=dict)
     patch: Optional[str] = None
+
+
+def normalize(name: str) -> str:
+    # https://www.python.org/dev/peps/pep-0503/
+    return re.sub(r"[-_.]+", "-", name).lower()
 
 
 def get_all_ros_packages() -> List[str]:
@@ -296,15 +303,61 @@ def build_source_packages(
     (dest_dir / (repository.name + ".repo")).write_text("\n".join(packages))
 
 
+def generate_index(index_dir: pathlib.Path, dest_dir: pathlib.Path) -> None:
+    all_packages: Dict[str, Dict[str, pathlib.Path]] = {}
+    for package in list(dest_dir.glob("**/*.whl")) + list(dest_dir.glob("**/*.tar.gz")):
+        if package.name.endswith("whl"):
+            package_name = normalize("-".join(package.name.split("-")[:-4]))
+        else:
+            package_name = normalize("-".join(package.name.split("-")[:-1]))
+        packages = all_packages.setdefault(package_name, {})
+        if package.name in packages:
+            print(f"{package.name} already exists")
+        else:
+            packages[package.name] = package
+    index_dir.mkdir(parents=True, exist_ok=True)
+    for package_name, packages in all_packages.items():
+        package_dir = index_dir / package_name
+        package_dir.mkdir(exist_ok=True)
+        for package_file in packages.values():
+            shutil.copy(package_file, package_dir)
+        files_list = "".join(
+            [
+                f'<a href="{fname}">{fname}</a><br>\n'
+                for fname in sorted(packages.keys())
+            ]
+        )
+        print(package_name)
+        print(files_list)
+        (package_dir / "index.html").write_text(
+            f"<!DOCTYPE html><html><body>\n{files_list}</body></html>"
+        )
+    package_list = "".join(
+        [f'<a href="{p}/">{p}</a><br>\n' for p in sorted(all_packages.keys())]
+    )
+    (index_dir / "index.html").write_text(
+        f"<!DOCTYPE html><html><body>\n{package_list}</body></html>"
+    )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--source", action="store_true", help="Build source packages")
+    parser.add_argument("--index", type=str, default=None, help="Generate index")
+    parser.add_argument(
+        "--dist", type=str, default="dist", help="Pakcage output directory"
+    )
     parser.add_argument(
         "--ignore-error",
         action="store_true",
         help="Ignore error (to cache build results even if it fails)",
     )
     args = parser.parse_args()
+    dest_dir = pathlib.Path(args.dist)
+    if args.index is not None:
+        print("Generate index")
+        generate_index(pathlib.Path(args.index), dest_dir)
+        return
     all_ros_packages = get_all_ros_packages()
     with open("packages.yaml") as f:
         repositories_data = yaml.safe_load(f)
@@ -318,7 +371,6 @@ def main() -> None:
     temp = tempfile.mkdtemp(prefix="ros2py-build-")
     if args.source:
         temp_dir = pathlib.Path(temp)
-    dest_dir = pathlib.Path("dist")
     try:
         for repository in repositories:
             if args.source:
