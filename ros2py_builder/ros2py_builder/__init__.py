@@ -193,7 +193,6 @@ def build_binary_packages(
     for package in build_packages:
         sdist = dest_dir / (package + ".tar.gz")
         assert sdist.exists()
-        print(f"{package}-cp3{sys.version_info[1]}-*.whl")
         if (
             len(list(dest_dir.glob(f"{package}-py3-*.whl"))) == 0
             and len(list(dest_dir.glob(f"{package}-cp3{sys.version_info[1]}-*.whl")))
